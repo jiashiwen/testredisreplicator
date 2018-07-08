@@ -36,6 +36,7 @@ public class MigrationExample {
         RedisURI turi = new RedisURI(targetUri);
         final ExampleClient target = new ExampleClient(turi.getHost(), turi.getPort());
         Configuration tconfig = Configuration.valueOf(turi);
+
         if (tconfig.getAuthPassword() != null) {
             Object auth = target.send(AUTH, tconfig.getAuthPassword().getBytes());
             System.out.println("AUTH:" + auth);
