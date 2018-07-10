@@ -28,7 +28,7 @@ import static redis.clients.jedis.Protocol.toByteArray;
 public class MigrationExample {
 
     public static void main(String[] args) throws IOException, URISyntaxException {
-        sync("redis://118.184.216.157:6379", "redis://118.184.217.153:6379");
+        sync("redis://118.184.217.153:6379","redis://118.184.216.157:6379" );
     }
 
     public static void sync(String sourceUri, String targetUri) throws IOException, URISyntaxException {
@@ -46,6 +46,7 @@ public class MigrationExample {
         r.addRdbListener(new RdbListener.Adaptor() {
             @Override
             public void handle(Replicator replicator, KeyValuePair<?> kv) {
+
                 if (!(kv instanceof DumpKeyValuePair)) return;
                 // Step1: select db
                 DB db = kv.getDb();
@@ -89,6 +90,8 @@ public class MigrationExample {
     }
 
     public static Replicator dress(Replicator r) {
+
+        r.getConfiguration()
         r.setRdbVisitor(new DumpRdbVisitor(r));
         r.addCommandParser(CommandName.name("PING"), new PingParser());
         r.addCommandParser(CommandName.name("APPEND"), new DefaultCommandParser());
