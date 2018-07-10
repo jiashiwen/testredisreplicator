@@ -1,5 +1,6 @@
 package red.shiwen.restredisreplicator;
 
+import com.beust.jcommander.JCommander;
 import com.moilioncircle.redis.replicator.*;
 import com.moilioncircle.redis.replicator.cmd.Command;
 import com.moilioncircle.redis.replicator.cmd.CommandListener;
@@ -12,6 +13,9 @@ import com.moilioncircle.redis.replicator.rdb.datatype.DB;
 import com.moilioncircle.redis.replicator.rdb.datatype.KeyValuePair;
 import com.moilioncircle.redis.replicator.rdb.dump.DumpRdbVisitor;
 import com.moilioncircle.redis.replicator.rdb.dump.datatype.DumpKeyValuePair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import red.shiwen.restredisreplicator.entity.ArgsSettingEntity;
 import redis.clients.jedis.Client;
 import redis.clients.jedis.Protocol;
 
@@ -27,8 +31,34 @@ import static redis.clients.jedis.Protocol.toByteArray;
 
 public class MigrationExample {
 
+    static Logger logger = LogManager.getLogger("transfor");
+
     public static void main(String[] args) throws IOException, URISyntaxException {
-        sync("redis://118.184.217.153:6379","redis://118.184.216.157:6379" );
+
+        ArgsSettingEntity argssetting = new ArgsSettingEntity();
+        JCommander jc = new JCommander();
+        jc.setProgramName("java -jar redisreplicator.jar");
+        jc.addObject(argssetting);
+
+        /*
+         * 解析输入参数
+         */
+        try {
+            jc.parse(args);
+        } catch (Exception e) {
+            jc.usage();
+            System.exit(0);
+        }
+
+        if (argssetting.isHelp()) {
+            jc.usage();
+            System.exit(0);
+        }
+
+        sync(argssetting.getSource(), argssetting.getTarget());
+
+//        sync("redis://118.184.217.153:6379","redis://118.184.216.157:6379" );
+
     }
 
     public static void sync(String sourceUri, String targetUri) throws IOException, URISyntaxException {
@@ -66,7 +96,8 @@ public class MigrationExample {
                     long ms = mkv.getExpiredMs() - System.currentTimeMillis();
                     if (ms <= 0) return;
                     Object r = target.restore(mkv.getRawKey(), ms, mkv.getValue(), true);
-                    System.out.println(r);
+//                    System.out.println(r);
+                    logger.info(r);
                 }
             }
         });
@@ -77,7 +108,12 @@ public class MigrationExample {
                 // Step3: sync aof command
                 DefaultCommand dc = (DefaultCommand) command;
                 Object r = target.send(dc.getCommand(), dc.getArgs());
-                System.out.println(r);
+//                System.out.println(r);
+                logger.info(new String(dc.getCommand()) + ":");
+                for (byte[] arge : dc.getArgs()) {
+                    System.out.println(new String(arge));
+                }
+
             }
         });
         r.addCloseListener(new CloseListener() {
@@ -91,7 +127,7 @@ public class MigrationExample {
 
     public static Replicator dress(Replicator r) {
 
-        r.getConfiguration()
+        r.getConfiguration();
         r.setRdbVisitor(new DumpRdbVisitor(r));
         r.addCommandParser(CommandName.name("PING"), new PingParser());
         r.addCommandParser(CommandName.name("APPEND"), new DefaultCommandParser());
