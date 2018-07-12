@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30">
+    <Properties>
+        <Property name="LOG_HOME">logs</Property>
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss:SSS} %-5p %c{1}:[%L] - %m%n</Property>
+        <Property name="TRANSFOR_PATTERN">%d{yyyy-MM-dd HH:mm:ss:SSS} - %m%n</Property>
+    </Properties>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT" follow="true">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+        <RollingFile name="transfor_appender" fileName="${LOG_HOME}/transfor.log"
+                     filePattern="${LOG_HOME}/transfor-%d{yyyy-MM-dd}.log">
+            <PatternLayout pattern="${TRANSFOR_PATTERN}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy modulate="true" interval="1"/>
+            </Policies>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Logger name="transfor" level="info">
+            <AppenderRef ref="transfor_appender"/>
+        </Logger>
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>

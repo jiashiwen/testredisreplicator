@@ -31,7 +31,8 @@ import static redis.clients.jedis.Protocol.toByteArray;
 
 public class MigrationExample {
 
-    static Logger logger = LogManager.getLogger("transfor");
+    static final Logger logger = LogManager.getLogger("transfor");
+
 
     public static void main(String[] args) throws IOException, URISyntaxException {
 
@@ -67,10 +68,16 @@ public class MigrationExample {
         final ExampleClient target = new ExampleClient(turi.getHost(), turi.getPort());
         Configuration tconfig = Configuration.valueOf(turi);
 
-        if (tconfig.getAuthPassword() != null) {
-            Object auth = target.send(AUTH, tconfig.getAuthPassword().getBytes());
-            System.out.println("AUTH:" + auth);
+        //获取password
+        if (turi.getUserInfo() != null) {
+            Object auth = target.send(AUTH, turi.getUserInfo().getBytes());
+            logger.info("Target AUTH:" + auth);
         }
+
+//        if (tconfig.getAuthPassword() != null) {
+//            Object auth = target.send(AUTH, tconfig.getAuthPassword().getBytes());
+//            System.out.println("AUTH:" + auth);
+//        }
         final AtomicInteger dbnum = new AtomicInteger(-1);
         Replicator r = dress(new RedisReplicator(suri));
         r.addRdbListener(new RdbListener.Adaptor() {
@@ -84,20 +91,19 @@ public class MigrationExample {
                 if (db != null && (index = (int) db.getDbNumber()) != dbnum.get()) {
                     target.send(SELECT, toByteArray(index));
                     dbnum.set(index);
-                    System.out.println("SELECT:" + index);
+                    logger.info("SELECT:" + index);
                 }
 
                 // Step2: restore dump data
                 DumpKeyValuePair mkv = (DumpKeyValuePair) kv;
                 if (mkv.getExpiredMs() == null) {
                     Object r = target.restore(mkv.getRawKey(), 0L, mkv.getValue(), true);
-                    System.out.println(r);
+                    logger.info(mkv.getKey() + "->" + r.toString());
                 } else {
                     long ms = mkv.getExpiredMs() - System.currentTimeMillis();
                     if (ms <= 0) return;
                     Object r = target.restore(mkv.getRawKey(), ms, mkv.getValue(), true);
-//                    System.out.println(r);
-                    logger.info(r);
+                    logger.info(mkv.getKey() + "->" + r.toString());
                 }
             }
         });
@@ -108,12 +114,19 @@ public class MigrationExample {
                 // Step3: sync aof command
                 DefaultCommand dc = (DefaultCommand) command;
                 Object r = target.send(dc.getCommand(), dc.getArgs());
-//                System.out.println(r);
-                logger.info(new String(dc.getCommand()) + ":");
-                for (byte[] arge : dc.getArgs()) {
-                    System.out.println(new String(arge));
+                StringBuffer info = new StringBuffer();
+                info.append(new String(dc.getCommand()));
+                info.append(":");
+
+                for (byte[] arg : dc.getArgs()) {
+                    info.append("[");
+                    info.append(new String(arg));
+                    info.append("]");
                 }
 
+                info.append("->");
+                info.append(r);
+                logger.info(info);
             }
         });
         r.addCloseListener(new CloseListener() {
