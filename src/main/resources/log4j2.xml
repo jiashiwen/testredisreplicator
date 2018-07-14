@@ -21,8 +21,11 @@
         <Logger name="transfor" level="info">
             <AppenderRef ref="transfor_appender"/>
         </Logger>
-        <Root level="info">
+        <Logger name="com.moilioncircle" level="error">
             <AppenderRef ref="Console"/>
+        </Logger>
+        <Root level="error">
+            <!--<AppenderRef ref="Console"/>-->
         </Root>
     </Loggers>
 </Configuration>

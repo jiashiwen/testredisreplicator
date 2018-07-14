@@ -69,21 +69,17 @@ public class MigrationExample {
         Configuration tconfig = Configuration.valueOf(turi);
 
         //获取password
-        if (turi.getUserInfo() != null) {
-            Object auth = target.send(AUTH, turi.getUserInfo().getBytes());
-            logger.info("Target AUTH:" + auth);
-        }
-
-//        if (tconfig.getAuthPassword() != null) {
-//            Object auth = target.send(AUTH, tconfig.getAuthPassword().getBytes());
+        if (tconfig.getAuthPassword() != null) {
+            Object auth = target.send(AUTH, tconfig.getAuthPassword().getBytes());
 //            System.out.println("AUTH:" + auth);
-//        }
+        }
         final AtomicInteger dbnum = new AtomicInteger(-1);
         Replicator r = dress(new RedisReplicator(suri));
+
         r.addRdbListener(new RdbListener.Adaptor() {
             @Override
             public void handle(Replicator replicator, KeyValuePair<?> kv) {
-
+                StringBuffer info = new StringBuffer();
                 if (!(kv instanceof DumpKeyValuePair)) return;
                 // Step1: select db
                 DB db = kv.getDb();
@@ -91,19 +87,28 @@ public class MigrationExample {
                 if (db != null && (index = (int) db.getDbNumber()) != dbnum.get()) {
                     target.send(SELECT, toByteArray(index));
                     dbnum.set(index);
-                    logger.info("SELECT:" + index);
+                    info.append("SELECT:");
+                    info.append(index);
+                    logger.info(info);
                 }
 
+                info.setLength(0);
                 // Step2: restore dump data
                 DumpKeyValuePair mkv = (DumpKeyValuePair) kv;
                 if (mkv.getExpiredMs() == null) {
                     Object r = target.restore(mkv.getRawKey(), 0L, mkv.getValue(), true);
-                    logger.info(mkv.getKey() + "->" + r.toString());
+                    info.append(mkv.getKey());
+                    info.append("->");
+                    info.append(r.toString());
+                    logger.info(info);
                 } else {
                     long ms = mkv.getExpiredMs() - System.currentTimeMillis();
                     if (ms <= 0) return;
                     Object r = target.restore(mkv.getRawKey(), ms, mkv.getValue(), true);
-                    logger.info(mkv.getKey() + "->" + r.toString());
+                    info.append(mkv.getKey());
+                    info.append("->");
+                    info.append(r.toString());
+                    logger.info(info);
                 }
             }
         });
