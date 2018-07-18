@@ -1,4 +1,4 @@
-package red.shiwen.restredisreplicator.pool;
+package red.shiwen.redissyncer.pool;
 
 import redis.clients.jedis.Client;
 import redis.clients.jedis.Protocol;

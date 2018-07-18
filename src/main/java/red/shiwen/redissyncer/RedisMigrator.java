@@ -1,4 +1,4 @@
-package red.shiwen.restredisreplicator;
+package red.shiwen.redissyncer;
 
 import com.beust.jcommander.JCommander;
 import com.moilioncircle.redis.replicator.*;
@@ -15,7 +15,7 @@ import com.moilioncircle.redis.replicator.rdb.dump.DumpRdbVisitor;
 import com.moilioncircle.redis.replicator.rdb.dump.datatype.DumpKeyValuePair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import red.shiwen.restredisreplicator.entity.ArgsSettingEntity;
+import red.shiwen.redissyncer.entity.ArgsSettingEntity;
 import redis.clients.jedis.Client;
 import redis.clients.jedis.Protocol;
 
@@ -29,7 +29,8 @@ import static redis.clients.jedis.Protocol.Command.RESTORE;
 import static redis.clients.jedis.Protocol.Command.SELECT;
 import static redis.clients.jedis.Protocol.toByteArray;
 
-public class MigrationExample {
+public class RedisMigrator {
+
 
     static final Logger logger = LogManager.getLogger("transfor");
 
@@ -75,6 +76,7 @@ public class MigrationExample {
         }
         final AtomicInteger dbnum = new AtomicInteger(-1);
         Replicator r = dress(new RedisReplicator(suri));
+
 
         r.addRdbListener(new RdbListener.Adaptor() {
             @Override
@@ -224,11 +226,7 @@ public class MigrationExample {
         return r;
     }
 
-    /*
-     * Jedis is not a reliable redis client.
-     * For simplicity we use Jedis to show this example.
-     * In production you need to replace following code to yours.
-     */
+
     public static class ExampleClient extends Client {
 
         public ExampleClient(final String host, final int port) {

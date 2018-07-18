@@ -18,10 +18,10 @@
         </RollingFile>
     </Appenders>
     <Loggers>
-        <Logger name="transfor" level="info">
+        <Logger name="transfor" level="error">
             <AppenderRef ref="transfor_appender"/>
         </Logger>
-        <Logger name="com.moilioncircle" level="error">
+        <Logger name="com.moilioncircle" level="info">
             <AppenderRef ref="Console"/>
         </Logger>
         <Root level="error">

@@ -1,4 +1,4 @@
-package red.shiwen.restredisreplicator.entity;
+package red.shiwen.redissyncer.entity;
 
 import com.beust.jcommander.Parameter;
 
