@@ -15,12 +15,18 @@ import com.moilioncircle.redis.replicator.rdb.dump.DumpRdbVisitor;
 import com.moilioncircle.redis.replicator.rdb.dump.datatype.DumpKeyValuePair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.ConfigurationSource;
+import org.apache.logging.log4j.core.config.Configurator;
 import red.shiwen.redissyncer.entity.ArgsSettingEntity;
+import red.shiwen.redissyncer.util.FileUtil;
 import redis.clients.jedis.Client;
 import redis.clients.jedis.Protocol;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -32,10 +38,16 @@ import static redis.clients.jedis.Protocol.toByteArray;
 public class RedisMigrator {
 
 
-    static final Logger logger = LogManager.getLogger("transfor");
+    static final String loggerpath = "log4j2.yml";
+    static Logger logger;
+//    static final Logger logger = LogManager.getLogger("transfor");
+    static final FileUtil fileutil = new FileUtil();
 
 
     public static void main(String[] args) throws IOException, URISyntaxException {
+
+//        System.out.println(logconfigfile.getAbsoluteFile());
+
 
         ArgsSettingEntity argssetting = new ArgsSettingEntity();
         JCommander jc = new JCommander();
@@ -64,6 +76,18 @@ public class RedisMigrator {
     }
 
     public static void sync(String sourceUri, String targetUri) throws IOException, URISyntaxException {
+
+        File logconfigfile = new File(loggerpath);
+        System.out.println(logconfigfile.exists());
+        ConfigurationSource source;
+        if (logconfigfile.exists()) {
+            source = new ConfigurationSource(new FileInputStream(logconfigfile));
+            Configurator.initialize(null, source);
+            System.out.println(logconfigfile.getAbsoluteFile() + " exiest");
+        }
+
+        logger = LogManager.getLogger("transfor");
+
         RedisURI suri = new RedisURI(sourceUri);
         RedisURI turi = new RedisURI(targetUri);
         final ExampleClient target = new ExampleClient(turi.getHost(), turi.getPort());
