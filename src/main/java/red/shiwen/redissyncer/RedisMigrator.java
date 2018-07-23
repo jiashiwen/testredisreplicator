@@ -78,7 +78,7 @@ public class RedisMigrator {
     public static void sync(String sourceUri, String targetUri) throws IOException, URISyntaxException {
 
         File logconfigfile = new File(loggerpath);
-        System.out.println(logconfigfile.exists());
+
         ConfigurationSource source;
         if (logconfigfile.exists()) {
             source = new ConfigurationSource(new FileInputStream(logconfigfile));
