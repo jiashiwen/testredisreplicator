@@ -167,6 +167,7 @@ public class RedisMigrator {
             }
         });
         r.open();
+
     }
 
     public static Replicator dress(Replicator r) {

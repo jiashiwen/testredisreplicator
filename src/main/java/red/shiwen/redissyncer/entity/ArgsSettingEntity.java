@@ -6,10 +6,10 @@ public class ArgsSettingEntity {
 
     @Parameter(names = "--help", help = true)
     private boolean help = false;
-    @Parameter(names = "--source", description = "source redis node default is 'redis://127.0.0.1:6379'")
+    @Parameter(names = "--source", description = "source redis node default is 'redis://127.0.0.1:6379',RedisUrl 'redis://ip:port?authPassword=yourpassword'")
     private String source = "redis://127.0.0.1:6379";
 
-    @Parameter(names = "--target", description = "target redis node default is 'redis://127.0.0.1:6379'")
+    @Parameter(names = "--target", description = "target redis node default is 'redis://127.0.0.1:6379',RedisUrl 'redis://ip:port?authPassword=yourpassword'")
     private String target = "redis://127.0.0.1:6379";
 
     public boolean isHelp() {
